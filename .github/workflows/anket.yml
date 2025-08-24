@@ -24,15 +24,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # ---- DEBUG: Private repo erişimini test et ----
-      - name: Probe private repo access (debug)
-        env:
-          PRIVATE_REPO_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
-        run: |
-          set -e
-          echo "Probing https://api.github.com/repos/tipquizleri-ops/tipquizleri-questions"
-          curl -i -s -H "Authorization: Bearer $PRIVATE_REPO_TOKEN" \
-            https://api.github.com/repos/tipquizleri-ops/tipquizleri-questions | head -n 20
 
       # ---- ÖZEL (PRIVATE) SORU REPOSU ----
       - name: Checkout PRIVATE questions repo

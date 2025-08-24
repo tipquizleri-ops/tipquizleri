@@ -1,4 +1,4 @@
-name: Anket Botu (TR özel saatler, geniş tolerans + commit)
+name: Anket Botu (Private questions + commit)
 
 on:
   schedule:
@@ -9,7 +9,7 @@ concurrency:
   group: tipquizleri-anket
   cancel-in-progress: true
 
-# GITHUB_TOKEN ile repoya yazabilmek için gerekli
+# asked/state'i repoya yazmak için gerekli
 permissions:
   contents: write
   actions: read
@@ -19,24 +19,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout main repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # (opsiyonel) tarih/commit mesajında işine yarar
+          fetch-depth: 0
+
+      # --- ÖZEL (PRIVATE) SORU REPOSU ---
+      - name: Checkout PRIVATE questions repo
+        uses: actions/checkout@v4
+        with:
+          repository: tipquizleri-ops/tipquizleri-questions   # <-- kendi kullanıcı/organizasyon adını yaz
+          ref: main
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
+          path: private_q
+
+      - name: Copy questions.json from private repo
+        run: |
+          if [ ! -f "private_q/questions.json" ]; then
+            echo "ERROR: private_q/questions.json bulunamadı!"
+            exit 1
+          fi
+          cp private_q/questions.json questions.json
+          echo "Questions copied. Size: $(wc -c < questions.json) bytes"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # İstersen cache'i kaldırabiliriz; commit artık kalıcılık sağlıyor.
-      # Dosyalar yoksa oluştur
-      - name: Ensure files exist
+      - name: Ensure state files exist
         run: |
           [ -f state.json ] || echo '{}' > state.json
           [ -f asked.json ] || echo '{"asked":[]}' > asked.json
@@ -47,8 +71,9 @@ jobs:
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          PRIVATE_REPO_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
         run: |
-          for n in X_API_KEY X_API_SECRET X_ACCESS_TOKEN X_ACCESS_SECRET; do
+          for n in X_API_KEY X_API_SECRET X_ACCESS_TOKEN X_ACCESS_SECRET PRIVATE_REPO_TOKEN; do
             if [ -z "${!n}" ]; then echo "$n=EMPTY"; else echo "$n=SET"; fi
           done
 
@@ -58,12 +83,12 @@ jobs:
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
-          SLOT_TOLERANCE_SEC: "3000"   # ±50 dk
+          SLOT_TOLERANCE_SEC: "3000"   # slottan ÖNCE en fazla 50 dk erken
+          LATE_GRACE_SEC:   "300"      # slottan SONRA en fazla 5 dk gecikme
         run: |
           python bot.py
 
       - name: Commit asked/state back to repo
-        # her çalıştırmada değişim olmayabilir; varsa commit/push yap
         env:
           TZ: "Europe/Istanbul"
         run: |

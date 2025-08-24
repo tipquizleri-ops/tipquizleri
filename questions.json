@@ -1,53 +1,62 @@
 [
   {
+    "id": "q001",
     "question": "Hangi vitaminin eksikliği gece körlüğüne yol açar?",
     "options": ["A) Vitamin A", "B) Vitamin B12", "C) Vitamin C", "D) Vitamin D"],
     "answer": "A"
   },
   {
+    "id": "q002",
     "question": "İnsan vücudunda insülini salgılayan organ hangisidir?",
     "options": ["A) Karaciğer", "B) Pankreas", "C) Dalak", "D) Böbrek"],
     "answer": "B"
   },
   {
+    "id": "q003",
     "question": "Kan grubu belirlenmesinde önemli olan antijenler hangi sistemdedir?",
     "options": ["A) ABO sistemi", "B) HLA sistemi", "C) Rh sistemi", "D) MN sistemi"],
     "answer": "A"
   },
   {
+    "id": "q004",
     "question": "Hangi akciğer lobu sağ akciğerde bulunmaz?",
     "options": ["A) Üst lob", "B) Orta lob", "C) Alt lob", "D) Lingula"],
     "answer": "D"
   },
   {
+    "id": "q005",
     "question": "Hangi hormon böbreklerden su geri emilimini artırır?",
     "options": ["A) ADH", "B) ACTH", "C) TSH", "D) LH"],
     "answer": "A"
   },
   {
+    "id": "q006",
     "question": "Hipotiroidizmde en sık görülen semptom hangisidir?",
     "options": ["A) Taşikardi", "B) İshal", "C) Soğuk intoleransı", "D) Kilo kaybı"],
     "answer": "C"
   },
   {
+    "id": "q007",
     "question": "Kalpte kasılmayı başlatan ana pacemaker bölgesi neresidir?",
     "options": ["A) AV düğüm", "B) Purkinje lifleri", "C) SA düğüm", "D) His demeti"],
     "answer": "C"
   },
   {
+    "id": "q008",
     "question": "Hangi vitaminin eksikliği skorbüt hastalığına neden olur?",
     "options": ["A) Vitamin D", "B) Vitamin C", "C) Vitamin E", "D) Vitamin K"],
     "answer": "B"
   },
   {
+    "id": "q009",
     "question": "Karaciğerin safra salgılamasını uyaran hormon hangisidir?",
     "options": ["A) Sekretin", "B) Gastrin", "C) Kolesistokinin", "D) Glukagon"],
     "answer": "C"
   },
   {
+    "id": "q010",
     "question": "Hangi hücre tipi oksijen taşır?",
     "options": ["A) Lökosit", "B) Eritrosit", "C) Trombosit", "D) Makrofaj"],
     "answer": "B"
   }
 ]
-

@@ -28,7 +28,7 @@ jobs:
       - name: Checkout PRIVATE questions repo
         uses: actions/checkout@v4
         with:
-          repository: tipquizleri-ops/tipquizleri-questions   # <-- kendi kullanıcı/organizasyon adını yaz
+          repository: https://github.com/tipquizleri-ops/tipquizleri-questions/   # <-- kendi kullanıcı/organizasyon adını yaz
           ref: main
           token: ${{ secrets.PRIVATE_REPO_TOKEN }}
           path: private_q

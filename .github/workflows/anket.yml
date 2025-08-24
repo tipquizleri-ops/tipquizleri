@@ -1,10 +1,8 @@
-name: Anket Botu (TR 08:00–22:00, 2 saatte bir)
+name: Anket Botu (TR özel saatler, geniş tolerans)
 
 on:
   schedule:
-    # UTC -> TR (UTC+3): 05,07,09,11,13,15,17,19 UTC
-    # TR tetikleri: 08:05,10:05,12:05,14:05,16:05,18:05,20:05,22:05
-    - cron: "5 5,7,9,11,13,15,17,19 * * *"
+    - cron: "*/5 * * * *"   # her 5 dakikada bir tetikle
   workflow_dispatch:
 
 concurrency:
@@ -31,7 +29,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # asked.json kalıcı tut (en güncel cache'i geri yükler)
+      # asked.json kalıcı tut
       - name: Restore asked cache
         uses: actions/cache@v4
         with:
@@ -41,7 +39,7 @@ jobs:
             asked-${{ github.ref }}-
             asked-
 
-      # state.json kalıcı tut (slot double-post koruması)
+      # state.json kalıcı tut
       - name: Restore state cache
         uses: actions/cache@v4
         with:
@@ -73,6 +71,6 @@ jobs:
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
-          SLOT_TOLERANCE_SEC: "900"   # ±15 dk tolerans (cron gecikmesine dayanıklı)
+          SLOT_TOLERANCE_SEC: "3000"   # ±60 dk: geniş marj
         run: |
           python bot.py

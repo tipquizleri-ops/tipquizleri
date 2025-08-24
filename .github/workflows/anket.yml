@@ -1,23 +1,28 @@
-name: Anket Botu (TR özel saatler, geniş tolerans)
+name: Anket Botu (TR özel saatler, geniş tolerans + commit)
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # her 5 dakikada bir tetikle
+    - cron: "*/5 * * * *"   # her 5 dakikada bir tetik
   workflow_dispatch:
 
 concurrency:
   group: tipquizleri-anket
   cancel-in-progress: true
 
+# GITHUB_TOKEN ile repoya yazabilmek için gerekli
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # (opsiyonel) tarih/commit mesajında işine yarar
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,26 +34,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # asked.json kalıcı tut
-      - name: Restore asked cache
-        uses: actions/cache@v4
-        with:
-          path: asked.json
-          key: asked-${{ github.ref }}-${{ github.run_id }}
-          restore-keys: |
-            asked-${{ github.ref }}-
-            asked-
-
-      # state.json kalıcı tut
-      - name: Restore state cache
-        uses: actions/cache@v4
-        with:
-          path: state.json
-          key: state-${{ github.ref }}-${{ github.run_id }}
-          restore-keys: |
-            state-${{ github.ref }}-
-            state-
-
+      # İstersen cache'i kaldırabiliriz; commit artık kalıcılık sağlıyor.
+      # Dosyalar yoksa oluştur
       - name: Ensure files exist
         run: |
           [ -f state.json ] || echo '{}' > state.json
@@ -71,6 +58,21 @@ jobs:
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
-          SLOT_TOLERANCE_SEC: "3000"   # ±60 dk: geniş marj
+          SLOT_TOLERANCE_SEC: "3000"   # ±50 dk
         run: |
           python bot.py
+
+      - name: Commit asked/state back to repo
+        # her çalıştırmada değişim olmayabilir; varsa commit/push yap
+        env:
+          TZ: "Europe/Istanbul"
+        run: |
+          git config user.name  "tipquizleri-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add asked.json state.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "update asked/state $(date +'%Y-%m-%d %H:%M:%S %Z')"
+            git push
+          fi

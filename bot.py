@@ -74,10 +74,69 @@ def mark_posted(state, datestr, hour):
     write_state(state)
 
 def load_questions():
-    qs = read_json(QUESTIONS_PATH, [])
-    if not isinstance(qs, list) or not qs:
-        raise RuntimeError("questions.json boş veya liste değil.")
-    return qs
+    """
+    questions.json şu formatlardan biri olabilir:
+    1) Dizi JSON:        [ {...}, {...} ]
+    2) Parantezsiz akış:  { ... },\n{ ... },\n{ ... },
+    3) JSON Lines:        { ... }\n{ ... }\n{ ... }
+    Hepsini listeye çevirir.
+    """
+    path = QUESTIONS_PATH
+    try:
+        # Önce düz json yüklemeyi dene
+        data = read_json(path, None)
+        if isinstance(data, list) and data:
+            return data
+        if isinstance(data, dict):
+            return [data]  # tek obje verilmişse listele
+    except Exception:
+        pass
+
+    # Ham metinle esnek parse
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            raw = f.read().strip()
+    except Exception:
+        raise RuntimeError("questions.json okunamadı.")
+
+    if not raw:
+        raise RuntimeError("questions.json boş.")
+
+    # 3) JSON Lines (her satır bağımsız obje)
+    if "\n" in raw and raw.lstrip().startswith("{") and not raw.strip().startswith("["):
+        lines = [ln.strip().rstrip(",") for ln in raw.splitlines() if ln.strip()]
+        objs = []
+        ok = True
+        for ln in lines:
+            try:
+                objs.append(json.loads(ln))
+            except Exception:
+                ok = False
+                break
+        if ok and objs:
+            return objs
+
+    # 2) Parantezsiz akış: başta '[' yoksa sarmala
+    if raw.lstrip().startswith("{") and not raw.strip().startswith("["):
+        # Sonda kalan trailing virgülü temizle
+        wrapped = "[" + raw.strip().strip().rstrip(",") + "]"
+        try:
+            data = json.loads(wrapped)
+            if isinstance(data, list) and data:
+                return data
+        except Exception:
+            pass
+
+    # 1) Normal JSON dizi deneyimi (son bir kez)
+    try:
+        data = json.loads(raw)
+        if isinstance(data, list) and data:
+            return data
+    except Exception:
+        pass
+
+    raise RuntimeError("questions.json boş veya liste değil (tanınan formatlara uymuyor).")
+
 
 def question_id(q):
     # 'id' varsa onu kullan; yoksa metinden kararlı kısa hash üret

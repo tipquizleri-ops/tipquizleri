@@ -24,7 +24,7 @@ ASKED_PATH     = "asked.json"     # sorulmuş soru ID'leri (kalıcı)
 IST = ZoneInfo("Europe/Istanbul")
 
 # Saat listesi (TR)
-SLOTS = [8, 10, 12, 13, 14, 16, 18, 19, 21, 22, 23]
+SLOTS = [8, 10, 12, 13, 14, 16, 18, 20, 21, 22, 23]
 # Varsayılan tolerans: 50 dk (3000 sn). Workflow'tan SLOT_TOLERANCE_SEC gelirse onu kullanır.
 TOLERANCE_SEC = int(os.getenv("SLOT_TOLERANCE_SEC", "3000"))
 
